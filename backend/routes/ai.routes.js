@@ -1,9 +1,8 @@
 const router  = require('express').Router();
 const ai      = require('../controllers/ai.controller');
-const { protect }   = require('../middleware/auth.middleware');
 const { aiLimiter } = require('../middleware/rateLimit.middleware');
 
-router.use(protect, aiLimiter);
+router.use(aiLimiter);
 
 router.post('/generate',            ai.generate);   
 router.post('/summary',             ai.generateSummary);
