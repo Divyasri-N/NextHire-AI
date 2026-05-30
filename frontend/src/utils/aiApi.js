@@ -1,30 +1,27 @@
 import axios from "axios";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-// Get auth token from localStorage
-const getToken = () => localStorage.getItem("token");
-
-// Axios config with auth header
-const authConfig = () => ({
-  headers: {
-    Authorization: `Bearer ${getToken()}`,
-  },
-});
-
-/**
- * Call the AI endpoint via backend (keeps API keys secure)
- */
 export async function callAI(prompt, systemPrompt = "") {
   const res = await axios.post(
-    `${API}/ai/generate`,
+    GROQ_URL,
     {
-      prompt,
-      system: systemPrompt || "You are an expert resume writer and career coach. Provide concise, professional, ATS-optimized content.",
+      model: "llama3-8b-8192",
+      messages: [
+        { role: "system", content: systemPrompt || "You are an expert resume writer and career coach. Provide concise, professional, ATS-optimized content." },
+        { role: "user", content: prompt }
+      ],
+      max_tokens: 1000,
     },
-    authConfig()
+    {
+      headers: {
+        Authorization: `Bearer ${GROQ_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    }
   );
-  return res.data.result;
+  return res.data.choices[0].message.content.trim();
 }
 
 export async function generateSummary({ name, role, skills, experience }) {
@@ -34,7 +31,6 @@ export async function generateSummary({ name, role, skills, experience }) {
     Target Role: ${role}
     Skills: ${skills.join(", ")}
     Experience: ${experience.map(e => `${e.role} at ${e.company}`).join(", ")}
-    
     Requirements: ATS-friendly, action-oriented, quantified where possible, 50-80 words.`
   );
 }
@@ -51,7 +47,6 @@ export async function improveDescription(role, company, currentDesc) {
     `Rewrite this experience description to be more impactful:
     Role: ${role} at ${company}
     Current: ${currentDesc}
-    
     Requirements:
     - Use strong action verbs (Led, Built, Improved, Scaled, etc.)
     - Add metrics and quantifications
@@ -65,7 +60,6 @@ export async function generateProjectDesc(title, tech) {
     `Write 3 professional resume bullet points for this project:
     Title: ${title}
     Tech Stack: ${tech}
-    
     Start each with • and use past tense. Focus on technical complexity, scale, and business impact.`
   );
 }
@@ -78,7 +72,6 @@ export async function generateCoverLetter({ resume, jobTitle, company, jobDescri
     Skills: ${resume.skills.technical?.join(", ")}
     Experience: ${resume.experience.map(e => `${e.role} at ${e.company}`).join(", ")}
     Job Description: ${jobDescription}
-    
     Keep it 3 paragraphs, professional, enthusiastic, and tailored to the role.`
   );
 }
