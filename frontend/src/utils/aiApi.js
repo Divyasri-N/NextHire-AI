@@ -7,7 +7,7 @@ export async function callAI(prompt, systemPrompt = "") {
   const res = await axios.post(
     GROQ_URL,
     {
-      model: "llama3-8b-8192",
+      model: "llama-3.1-8b-instant",
       messages: [
         { role: "system", content: systemPrompt || "You are an expert resume writer and career coach. Provide concise, professional, ATS-optimized content." },
         { role: "user", content: prompt }
