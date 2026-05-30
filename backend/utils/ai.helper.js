@@ -1,17 +1,15 @@
-const { GoogleGenAI } = require('@google/genai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // ── Shared call wrapper ──────────────────────────────────────────
 const askAI = async (prompt, systemPrompt = '') => {
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: prompt,
-    config: {
-      systemInstruction: systemPrompt || 'You are an expert resume writer and career coach. Provide concise, professional, ATS-optimized content.',
-    },
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-1.5-flash',
+    systemInstruction: systemPrompt || 'You are an expert resume writer and career coach. Provide concise, professional, ATS-optimized content.',
   });
-  return response.text.trim();
+  const result = await model.generateContent(prompt);
+  return result.response.text().trim();
 };
 
 // ── General AI generate (used by frontend aiApi.js) ──────────────
